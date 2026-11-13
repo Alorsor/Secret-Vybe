@@ -461,6 +461,7 @@ footer {
         messages. Share moments and connect with a positive community.
       </p>
       <button class="btn" id="start">Create your free account</button>
+<button class="btn soft" id="homeLogin">Log in</button>
     </div>
     <div class="art">💌</div>
   </div>
@@ -486,16 +487,46 @@ footer {
 
 <section id="signup" class="box hidden">
   <h2>Create your account</h2>
-  <p class="muted">Choose a unique username. No email or password required.</p>
+  <p class="muted">Choose your username and password.</p>
 
-  <input id="username" class="field" maxlength="20"
-  placeholder="username (3–20 letters, numbers or _)">
+  <input id="username" class="field"
+    maxlength="20"
+    placeholder="Choose a username">
+
+  <input id="password" class="field"
+    type="password"
+    minlength="8"
+    placeholder="Create a password (minimum 8 characters)">
 
   <button id="create" class="btn">Create account</button>
 
   <p class="muted">
-    This demo account is tied to this browser. Clearing browser data
-    or changing devices may make recovery impossible.
+    Keep your password safe. There is no email-based password recovery.
+  </p>
+
+  <p>
+    Already have an account?
+    <button id="showLogin" class="btn soft">Log in</button>
+  </p>
+</section>
+
+<section id="login" class="box hidden">
+  <h2>Welcome back!</h2>
+  <p class="muted">Log in to your Secret Vibe account.</p>
+
+  <input id="loginUsername" class="field"
+    maxlength="20"
+    placeholder="Your username">
+
+  <input id="loginPassword" class="field"
+    type="password"
+    placeholder="Your password">
+
+  <button id="loginButton" class="btn">Log in</button>
+
+  <p>
+    Don't have an account?
+    <button id="showSignup" class="btn soft">Create account</button>
   </p>
 </section>
 
@@ -605,7 +636,7 @@ const say = t => {
 };
 
 const show = id => {
-  ['homeView','signup','public','dash'].forEach(x =>
+  ['homeView','signup','login','public','dash'].forEach(x =>
     $(x).classList.toggle('hidden',x !== id)
   );
 };
@@ -844,34 +875,106 @@ $('create').onclick = async () => {
   dashboard();
 };
 
-$('send').onclick = async () => {
-  const text = $('publicText').value.trim();
-  if (text.length < 2) return say('Write at least 2 characters.');
+function accountEmail(username) {
+  return username.toLowerCase() + '@secretvibe.invalid';
+}
 
-  let result;
+$('create').onclick = async () => {
+  const username = $('username').value.trim().toLowerCase();
+  const password = $('password').value;
 
-  if ($('send').dataset.mode === 'post') {
-    result = await db.rpc('send_post_reaction', {
-      target_post_id: $('send').dataset.postId,
-      message_text: text
-    });
-  } else {
-    const username = $('send').dataset.username;
-    if (!username) return say('Profile not found.');
+  if (!/^[a-z0-9_]{3,20}$/.test(username))
+    return say('Username must contain 3–20 letters, numbers or underscores.');
 
-    result = await db.rpc('send_anonymous_message', {
-      target_username: username,
-      message_text: text
-    });
+  if (password.length < 8)
+    return say('Password must contain at least 8 characters.');
+
+  const {data,error} = await db.auth.signUp({
+    email: accountEmail(username),
+    password: password,
+    options: {
+      data: {username}
+    }
+  });
+
+  if (error)
+    return say(error.message);
+
+  if (!data.user || !data.session)
+    return say('Account created, but automatic login failed. Please log in.');
+
+  me = data.user;
+
+  const {error:profileError} = await db.from('profiles').insert({
+    id: me.id,
+    username: username
+  });
+
+  if (profileError) {
+    await db.auth.signOut();
+    me = null;
+
+    return say(profileError.code === '23505'
+      ? 'Username already taken.'
+      : profileError.message);
   }
 
-  if (result.error) return say(result.error.message);
+  profile = {
+    id: me.id,
+    username: username
+  };
 
-  $('publicText').value = '';
-  $('publicStatus').textContent = 'Your anonymous reaction has been sent.';
-  say('Sent anonymously!');
+  $('username').value = '';
+  $('password').value = '';
+
+  say('Account created successfully!');
+  dashboard();
+};
+$('loginButton').onclick = async () => {
+  const username = $('loginUsername').value.trim().toLowerCase();
+  const password = $('loginPassword').value;
+
+  if (!/^[a-z0-9_]{3,20}$/.test(username))
+    return say('Enter a valid username.');
+
+  if (!password)
+    return say('Enter your password.');
+
+  const {data,error} = await db.auth.signInWithPassword({
+    email: accountEmail(username),
+    password: password
+  });
+
+  if (error)
+    return say('Incorrect username or password.');
+
+  me = data.user;
+
+  const {data:profileData,error:profileError} = await db
+    .from('profiles')
+    .select('*')
+    .eq('id',me.id)
+    .maybeSingle();
+
+  if (profileError || !profileData) {
+    await db.auth.signOut();
+    me = null;
+    return say('Account profile could not be found.');
+  }
+
+  profile = profileData;
+
+  $('loginPassword').value = '';
+
+  say('Welcome back!');
+  dashboard();
 };
 
+$('homeLogin').onclick = () => show('login');
+
+$('showLogin').onclick = () => show('login');
+
+$('showSignup').onclick = () => show('signup');
 $('copy').onclick = async () => {
   try {
     await navigator.clipboard.writeText($('myLink').value);
