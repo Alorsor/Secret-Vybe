@@ -1003,6 +1003,49 @@ $('homeLogin').onclick = () => show('login');
 $('showLogin').onclick = () => show('login');
 
 $('showSignup').onclick = () => show('signup');
+$('send').onclick = async () => {
+  const button = $('send');
+  const message = $('publicText').value.trim();
+
+  if (message.length < 2) {
+    say('Please write at least 2 characters.');
+    return;
+  }
+
+  const username = button.dataset.username;
+
+  if (!username) {
+    say('Recipient profile not found. Please reopen the personal link.');
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'Sending...';
+
+  try {
+    const {data, error} = await db.rpc(
+      'send_anonymous_message',
+      {
+        target_username: username,
+        message_text: message
+      }
+    );
+
+    if (error) throw error;
+
+    $('publicText').value = '';
+    $('publicStatus').textContent = 'Message sent successfully!';
+    say('Anonymous message sent!');
+
+  } catch (error) {
+    console.error(error);
+    say('Sending failed: ' + error.message);
+
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Send anonymously';
+  }
+};
 $('copy').onclick = async () => {
   try {
     await navigator.clipboard.writeText($('myLink').value);
