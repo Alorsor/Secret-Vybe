@@ -1570,7 +1570,6 @@ async function makeStatusFile({imageUrl, title, body, link, filename}) {
   });
 }
 async function shareImageAndLink(file, text) {
-
   if (
     navigator.canShare &&
     navigator.canShare({files:[file]})
@@ -1582,7 +1581,26 @@ async function shareImageAndLink(file, text) {
     });
     return;
   }
-  // SHARE YOUR COMMUNITY PICTURE TO WHATSAPP STATUS
+
+  const objectUrl = URL.createObjectURL(file);
+
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = file.name;
+  a.click();
+
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+
+  const whatsappUrl =
+    'https://wa.me/?text=' + encodeURIComponent(text);
+
+  window.open(whatsappUrl, '_blank');
+
+  say('Image downloaded. Attach it to your WhatsApp Status.');
+}
+
+
+// SHARE COMMUNITY PICTURE TO WHATSAPP STATUS
 window.sharePostToStatus = async function(id) {
   try {
     const {data:post,error} = await db
@@ -1591,13 +1609,11 @@ window.sharePostToStatus = async function(id) {
       .eq('id',id)
       .single();
 
-    if(error || !post) {
+    if (error || !post)
       return say('Could not load your picture.');
-    }
 
-    if(!post.image_url) {
+    if (!post.image_url)
       return say('This post does not contain a picture.');
-    }
 
     const link = location.origin + location.pathname;
 
@@ -1611,12 +1627,13 @@ window.sharePostToStatus = async function(id) {
 
     await shareImageAndLink(
       file,
-      'What do you think about my picture? Send an anonymous reaction here: ' + link
+      'Check out my picture on Secret Vibe! 💚\n\n' +
+      'Create your own account here:\n' + link
     );
 
   } catch(error) {
     console.error(error);
-    say('Picture sharing failed. Check your image and try again.');
+    say('Picture sharing failed: ' + error.message);
   }
 };
 
@@ -1630,12 +1647,10 @@ window.sharePostReaction = async function(messageId) {
       .eq('id',messageId)
       .single();
 
-    if(error || !message || !message.post) {
+    if (error || !message || !message.post)
       return say('Could not find the original picture.');
-    }
 
     const post = message.post;
-
     const link = location.origin + location.pathname;
 
     const file = await makeStatusFile({
@@ -1648,36 +1663,15 @@ window.sharePostReaction = async function(messageId) {
 
     await shareImageAndLink(
       file,
-      'Someone reacted anonymously to my picture! 💜 ' + link
+      'Someone reacted to my picture on Secret Vibe! 💜\n\n' +
+      'Create your own account here:\n' + link
     );
 
   } catch(error) {
     console.error(error);
-    say('Could not create your reaction card.');
+    say('Could not create your reaction card: ' + error.message);
   }
 };
-
-  const objectUrl = URL.createObjectURL(file);
-
-  const a = document.createElement('a');
-  a.href = objectUrl;
-  a.download = file.name;
-  a.click();
-
-  setTimeout(() => URL.revokeObjectURL(objectUrl),1500);
-
-  const whatsappUrl =
-    'https://wa.me/?text=' + encodeURIComponent(text);
-
-  window.open(whatsappUrl,'_blank');
-
-  say('Image downloaded. Attach it to your WhatsApp Status.');
-}
-'Check out my picture on Secret Vibe! 💚\n\n' +
-'Create your own account here:\n' + link
-
- 'Someone reacted to my picture on Secret Vibe! 💜\n\n' +
-'Create your own account here:\n' + link
 async function publishPost(shareAfter = false) {
   const caption = $('caption').value.trim();
   const file = $('photo').files[0];
