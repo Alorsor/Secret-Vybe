@@ -1928,7 +1928,9 @@ $('changeUsername').onclick = async () => {
   $('profileName').textContent = 'Username: @' + newName;
   $('welcome').textContent = 'Welcome, @' + newName;
   $('myLink').value =
-    location.origin + location.pathname + '?u=' + newName;
+  window.location.origin +
+  window.location.pathname +
+  '?u=' + encodeURIComponent(profile.username);
 
   $('newUsername').value = '';
 
