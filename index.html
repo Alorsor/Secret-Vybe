@@ -7,6 +7,30 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+  /* PUBLIC USER PROFILES */
+
+.public-profile-post {
+  background: #fff8e8;
+  color: #263b31;
+  border: 1px solid #d5ad60;
+  border-radius: 16px;
+  padding: 14px;
+  margin: 14px 0;
+}
+
+.public-profile-post p {
+  color: #263b31;
+}
+
+.username-link {
+  color: #946b08;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.username-link:hover {
+  text-decoration: underline;
+}
 :root {
   --navy:#172554;
   --purple:#7664d8;
@@ -476,6 +500,17 @@ footer {
 </section>
 
 <section id="public" class="box hidden">
+  <div id="publicProfile" class="hidden">
+  <span class="pill">SECRET VIBE MEMBER</span>
+
+  <h2 id="publicProfileName"></h2>
+
+  <p id="publicProfileCount" class="muted"></p>
+
+  <div id="publicProfilePosts"></div>
+
+  <hr>
+</div>
   <span class="pill" id="publicPill">ANONYMOUS MESSAGE</span>
   <h2 id="publicTitle">Send a message</h2>
   <div id="publicPost" class="hidden">
@@ -582,18 +617,24 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g,c => ({
   '"':'&quot;',
   "'":'&#39;'
 }[c]));
-
 async function route() {
   const params = new URLSearchParams(location.search);
+
   const postId = params.get('post');
   const username = params.get('u');
 
   if (postId) {
     show('public');
+
+    $('publicProfile').classList.add('hidden');
     $('publicPost').classList.remove('hidden');
+
     $('publicPill').textContent = 'VIBE MY PICTURE';
     $('publicTitle').textContent = 'Share your thoughts anonymously';
-    $('publicText').placeholder = 'What do you think about this picture?';
+
+    $('publicText').placeholder =
+      'What do you think about this picture?';
+
     $('send').textContent = 'Send anonymous reaction';
     $('send').dataset.mode = 'post';
     $('send').dataset.postId = postId;
@@ -613,8 +654,12 @@ async function route() {
     }
 
     $('send').disabled = false;
+
     $('reactionPostCaption').textContent =
-      (data.caption || '') + (data.profiles?.username ? ' — @' + data.profiles.username : '');
+      (data.caption || '') +
+      (data.profiles?.username
+        ? ' — @' + data.profiles.username
+        : '');
 
     if (data.image_url) {
       $('reactionPostImage').src = data.image_url;
@@ -622,30 +667,100 @@ async function route() {
     } else {
       $('reactionPostImage').classList.add('hidden');
     }
+
     return;
   }
 
   $('publicPost').classList.add('hidden');
+
   $('send').disabled = false;
   $('send').textContent = 'Send anonymously';
   $('send').dataset.mode = 'message';
-  $('publicText').placeholder = 'Write your anonymous message...';
+
+  $('publicText').placeholder =
+    'Write your anonymous message...';
 
   if (username) {
     show('public');
+
+    $('publicProfile').classList.remove('hidden');
+
     $('publicPill').textContent = 'ANONYMOUS MESSAGE';
 
-    const {data} = await db.from('profiles')
-      .select('username')
+    const {data:publicUser,error:profileError} = await db
+      .from('profiles')
+      .select('id,username')
       .eq('username',username.toLowerCase())
       .maybeSingle();
 
-    $('publicTitle').textContent = data
-      ? 'Send an anonymous message to @' + data.username
-      : 'Profile not found';
+    if (profileError || !publicUser) {
+      $('publicProfileName').textContent = 'Profile not found';
 
-    $('send').dataset.username = data?.username || '';
+      $('publicProfilePosts').textContent =
+        'This profile does not exist.';
+
+      $('publicTitle').textContent = 'Profile not found';
+
+      $('send').dataset.username = '';
+
+      return;
+    }
+
+    $('publicProfileName').textContent =
+      '@' + publicUser.username;
+
+    $('publicTitle').textContent =
+      'Send an anonymous message to @' + publicUser.username;
+
+    $('send').dataset.username = publicUser.username;
+
+    const {data:publicPosts,error:postsError} = await db
+      .from('posts')
+      .select('id,caption,image_url,created_at')
+      .eq('author_id',publicUser.id)
+      .order('created_at',{ascending:false})
+      .limit(50);
+
+    if (postsError) {
+      $('publicProfilePosts').textContent =
+        'Could not load posts: ' + postsError.message;
+
+      return;
+    }
+
+    const posts = publicPosts || [];
+
+    $('publicProfileCount').textContent =
+      posts.length + (posts.length === 1
+        ? ' published post'
+        : ' published posts');
+
+    $('publicProfilePosts').innerHTML = posts.length
+      ? posts.map(post => `
+          <article class="public-profile-post">
+
+            ${post.image_url
+              ? `<img
+                  src="${esc(post.image_url)}"
+                  alt="Post by ${esc(publicUser.username)}"
+                  style="width:100%;max-height:380px;object-fit:cover;border-radius:12px">
+                `
+              : ''}
+
+            ${post.caption
+              ? `<p>${esc(post.caption)}</p>`
+              : ''}
+
+            <p class="muted">
+              ${new Date(post.created_at).toLocaleString()}
+            </p>
+
+          </article>
+        `).join('')
+      : '<p class="muted">This user has not published anything yet.</p>';
+
   } else {
+    $('publicProfile').classList.add('hidden');
     show('homeView');
   }
 }
@@ -1316,7 +1431,10 @@ async function feed() {
           ? `<img src="${esc(p.image_url)}" alt="Community picture">`
           : ''}
         <div class="postbody">
-          <b>@${esc(p.profiles?.username || 'member')}</b>
+         <a class="username-link"
+   href="?u=${encodeURIComponent(p.profiles?.username || '')}">
+   @${esc(p.profiles?.username || 'member')}
+</a>
           <p>${esc(p.caption)}</p>
           <p class="muted">${new Date(p.created_at).toLocaleString()}</p>
 
