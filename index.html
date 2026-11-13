@@ -457,7 +457,7 @@ footer {
 
 #dash .message {
   background: #fff8e8 !important;
-  color: #183b32 !important;
+  color: #1909d1 !important;
   border: 2px solid #d5ad60 !important;
   border-radius: 16px !important;
   padding: 20px !important;
@@ -466,12 +466,81 @@ footer {
 
 #dash .message p,
 #dash .message .muted {
-  color: #263b31 !important;
-  opacity: 1 !important;
+  color: #2918c1 !important;
+  opacity: 1 !important; 
 }
 
 #dash .message .pill {
   color: #805b08 !important;
+}
+/* CLEAR PUBLISHED POST CAPTIONS */
+#publicProfilePosts .post,
+#publicProfilePosts article {
+  background: #fff8e8 !important;
+  border: 2px solid #d5ad60 !important;
+  border-radius: 18px !important;
+}
+
+#publicProfilePosts p,
+#publicProfilePosts .post-caption {
+  color: #183b32 !important;
+  opacity: 1 !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  line-height: 1.7 !important;
+  text-shadow: none !important;
+}
+
+#publicProfilePosts textarea {
+  width: 100%;
+  min-height: 100px;
+  background: #ffffff !important;
+  color: #183b32 !important;
+  border: 2px solid #c9a45c !important;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 16px;
+}
+.public-profile-post {
+  background: #fff8e8 !important;
+  padding: 22px !important;
+  margin: 20px 0 !important;
+  border: 2px solid #d5ad60 !important;
+  border-radius: 18px !important;
+}
+
+.public-profile-post .post-caption {
+  color: #173d33 !important;
+  font-size: 19px !important;
+  font-weight: 700 !important;
+  line-height: 1.7 !important;
+  opacity: 1 !important;
+}
+
+.post-message-box {
+  background: #173d33;
+  padding: 18px;
+  margin-top: 20px;
+  border-radius: 14px;
+}
+
+.post-message-box h3 {
+  color: #f5dfa6;
+}
+
+.post-message-box textarea {
+  width: 100%;
+  min-height: 100px;
+  box-sizing: border-box;
+  background: #fff8e8 !important;
+  color: #173d33 !important;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+.post-message-box p {
+  color: #f5dfa6;
 }
 </style>
 </head>
@@ -814,30 +883,41 @@ async function route() {
         ? ' published post'
         : ' published posts');
 
-    $('publicProfilePosts').innerHTML = posts.length
-      ? posts.map(post => `
-          <article class="public-profile-post">
+    $('publicProfilePosts').innerHTML = posts.map(post => `
+  <article class="public-profile-post">
 
-            ${post.image_url
-              ? `<img
-                  src="${esc(post.image_url)}"
-                  alt="Post by ${esc(publicUser.username)}"
-                  style="width:100%;max-height:380px;object-fit:cover;border-radius:12px">
-                `
-              : ''}
+    ${post.image_url
+      ? `<img src="${esc(post.image_url)}"
+          alt="Post by ${esc(publicUser.username)}"
+          style="width:100%;max-height:380px;object-fit:cover;border-radius:12px">`
+      : ''
+    }
 
-            ${post.caption
-              ? `<p>${esc(post.caption)}</p>`
-              : ''}
+    <p class="post-caption">${esc(post.caption || '')}</p>
 
-            <p class="muted">
-              ${new Date(post.created_at).toLocaleString()}
-            </p>
+    <p class="muted">
+      ${new Date(post.created_at).toLocaleString()}
+    </p>
 
-          </article>
-        `).join('')
-      : '<p class="muted">This user has not published anything yet.</p>';
+    <div class="post-message-box">
+      <h3>💌 Send an anonymous message about this post</h3>
 
+      <textarea
+        id="postMessage-${post.id}"
+        placeholder="What do you think about this picture?"
+        maxlength="1000">
+      </textarea>
+
+      <button class="btn"
+        onclick="sendPostMessage('${post.id}')">
+        Send Anonymous Message
+      </button>
+
+      <p id="postStatus-${post.id}"></p>
+    </div>
+
+  </article>
+`).join('') || '<p class="muted">This user has not published anything yet.</p>';
   } else {
     $('publicProfile').classList.add('hidden');
     show('homeView');
@@ -926,6 +1006,42 @@ $('create').onclick = async () => {
 function accountEmail(username) {
   return username.toLowerCase() + '@secretvibe.invalid';
 }
+
+window.sendPostMessage = async postId => {
+  const input = document.getElementById('postMessage-' + postId);
+  const status = document.getElementById('postStatus-' + postId);
+  const button = input.parentElement.querySelector('button');
+
+  const message = input.value.trim();
+
+  if (message.length < 2) {
+    status.textContent = 'Please write at least 2 characters.';
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'Sending...';
+
+  try {
+    const {error} = await db.rpc('send_post_reaction', {
+      target_post_id: postId,
+      message_text: message
+    });
+
+    if (error) throw error;
+
+    input.value = '';
+    status.textContent = 'Your anonymous message was sent successfully!';
+
+  } catch (error) {
+    console.error(error);
+    status.textContent = 'Sending failed: ' + error.message;
+
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Send Anonymous Message';
+  }
+};
 
 $('create').onclick = async () => {
   const username = $('username').value.trim().toLowerCase();
