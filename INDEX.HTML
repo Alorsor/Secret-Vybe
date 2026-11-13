@@ -1,0 +1,1439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Secret Vibe</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --navy:#172554;
+  --purple:#7664d8;
+  --bg:#f5f6fb;
+  --line:#e5e7ef;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:var(--bg);
+  color:#172033;
+  font:15px system-ui,sans-serif;
+}
+.top {
+  background:white;
+  border-bottom:1px solid var(--line);
+  padding:15px max(20px,calc((100% - 1040px)/2));
+  display:flex;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+}
+.brand {
+  font-size:21px;
+  font-weight:850;
+  color:var(--navy);
+}
+.brand span {color:var(--purple)}
+main {
+  max-width:1040px;
+  margin:28px auto;
+  padding:0 18px;
+}
+.hero {
+  background:linear-gradient(120deg,#172554,#51429d);
+  color:white;
+  border-radius:22px;
+  padding:40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.hero h1 {
+  font-size:clamp(34px,6vw,54px);
+  line-height:1.05;
+  margin:12px 0;
+}
+.hero p {max-width:540px;color:#e3e5ff}
+.art {font-size:90px}
+.box {
+  background:white;
+  border:1px solid var(--line);
+  border-radius:17px;
+  padding:22px;
+  margin:18px 0;
+  box-shadow:0 10px 30px #1725540c;
+}
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.btn {
+  border:0;
+  border-radius:11px;
+  padding:12px 16px;
+  background:var(--navy);
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+}
+.soft {background:#efedff;color:#51429d}
+.field {
+  display:block;
+  width:100%;
+  padding:13px;
+  border:1px solid #dce0eb;
+  border-radius:11px;
+  margin:8px 0 13px;
+  font:inherit;
+}
+.muted {color:#6b7280}
+.hidden {display:none!important}
+.tabs {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:20px 0;
+}
+.tab {
+  border:0;
+  padding:10px 15px;
+  border-radius:10px;
+  background:#e9eaf2;
+  color:#3e4660;
+  font-weight:700;
+}
+.tab.active {background:var(--navy);color:white}
+.linkrow {display:flex;gap:8px}
+.linkrow input {flex:1;min-width:0}
+.message,.comment {
+  background:#f5f5fb;
+  padding:13px;
+  border-radius:11px;
+  margin:10px 0;
+  overflow-wrap:anywhere;
+}
+.post {
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  margin:14px 0;
+}
+.post img {
+  width:100%;
+  max-height:400px;
+  object-fit:cover;
+}
+.postbody {padding:15px}
+.actions {display:flex;gap:8px}
+.actions button {
+  border:0;
+  border-radius:8px;
+  padding:8px 12px;
+  background:#efedff;
+  color:#51429d;
+}
+.pill {
+  font-size:12px;
+  background:#eeecff;
+  color:#51429d;
+  padding:5px 9px;
+  border-radius:20px;
+  font-weight:700;
+}
+.toast {
+  position:fixed;
+  bottom:18px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#172554;
+  color:white;
+  padding:12px 18px;
+  border-radius:10px;
+}
+.reaction-photo {
+  display:block;
+  width:100%;
+  max-height:430px;
+  object-fit:contain;
+  border-radius:13px;
+  background:#f1f2f7;
+  margin:14px 0;
+}
+.post-reaction-preview {
+  width:100%;
+  max-height:280px;
+  object-fit:cover;
+  border-radius:10px;
+  margin:8px 0;
+}
+.foot {
+  text-align:center;
+  color:#8991a3;
+  padding:30px;
+}
+@media(max-width:650px) {
+  .hero {padding:26px}
+  .art {display:none}
+  .grid {grid-template-columns:1fr}
+  .linkrow {flex-wrap:wrap}
+}
+/* SECRET VIBE — GOLD LUXURY THEME */
+
+:root {
+  --gold: #d4a017;
+  --gold-light: #f5d778;
+  --gold-dark: #946b08;
+  --cream: #fffaf0;
+  --brown: #382817;
+  --white: #ffffff;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, #fff0bd, transparent 35%),
+    radial-gradient(circle at bottom right, #f5dfaa, transparent 35%),
+    #fffaf0 !important;
+  color: var(--brown) !important;
+}
+
+/* Header and branding */
+.top {
+  background: rgba(255,250,240,.96) !important;
+  border-bottom: 1px solid #ead7a0 !important;
+  backdrop-filter: blur(15px);
+}
+
+.brand {
+  background: linear-gradient(90deg, #946b08, #e8bd42, #a8790c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* Main sections and cards */
+.box, .post, .card, .modal {
+  background: linear-gradient(145deg, #fffefa, #fff5d9) !important;
+  border: 1px solid #e9d18c !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(148,107,8,.10) !important;
+}
+
+/* Hero section */
+.hero {
+  background: linear-gradient(125deg, #74500a, #c49519, #f0d477) !important;
+  color: white !important;
+  border: 1px solid #f5d778;
+  box-shadow: 0 15px 35px rgba(148,107,8,.25);
+}
+
+/* Buttons */
+button, .btn {
+  background: linear-gradient(110deg, #a8790c, #e2b83e, #b88712) !important;
+  color: white !important;
+  border: 1px solid #f5d778 !important;
+  border-radius: 12px !important;
+  transition: .25s ease;
+}
+
+button:hover, .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(148,107,8,.25);
+}
+
+/* Inputs and text areas */
+.field, input, textarea, select {
+  background: #fffefa !important;
+  color: #382817 !important;
+  border: 1px solid #dfc36f !important;
+  border-radius: 12px !important;
+}
+
+.field:focus, input:focus, textarea:focus {
+  outline: none;
+  border-color: #b88712 !important;
+  box-shadow: 0 0 0 3px #d4a01725 !important;
+}
+
+/* Navigation and tabs */
+.tab {
+  background: #f7edcf !important;
+  color: #79580d !important;
+}
+
+.tab.active {
+  background: linear-gradient(110deg, #a8790c, #e2b83e) !important;
+  color: white !important;
+}
+
+/* Labels and badges */
+.pill {
+  background: #f5e6b8 !important;
+  color: #805b08 !important;
+  border: 1px solid #e5ca76;
+}
+
+/* Links */
+a {
+  color: #a8790c;
+}
+
+/* Messages and notifications */
+.toast {
+  background: linear-gradient(110deg, #74500a, #d4a017) !important;
+  color: white !important;
+}
+
+/* Text */
+h1, h2, h3, h4 {
+  color: #65480c;
+}
+
+/* Dividers */
+hr {
+  border-color: #ead7a0;
+}
+
+/* Footer */
+footer {
+  color: #806a3a;
+}
+/* GOLD DESIGN FOR THE TWO HOME PAGE CARDS */
+
+#homeView .grid > .box {
+  background: linear-gradient(135deg, #fff1bd, #e8c66d, #f8e7b0) !important;
+  border: 2px solid #d4a017 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 25px rgba(148, 107, 8, 0.18) !important;
+  color: #49340c !important;
+}
+
+#homeView .grid > .box h2 {
+  color: #805b08 !important;
+}
+
+#homeView .grid > .box p {
+  color: #624915 !important;
+}
+/* CLASSIC EMERALD SIGNUP DESIGN */
+
+#signup.box {
+  background: linear-gradient(135deg, #102c27, #17483b, #0b211d) !important;
+  border: 1px solid #c9a45c !important;
+  border-radius: 24px !important;
+  padding: 38px !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2) !important;
+  color: #fff8e8 !important;
+}
+
+#signup h2 {
+  color: #f2d99b !important;
+}
+
+#signup p,
+#signup .muted {
+  color: #e4ddc9 !important;
+}
+
+#signup input {
+  background: #fffaf0 !important;
+  color: #183b32 !important;
+  border: 1px solid #c9a45c !important;
+  border-radius: 12px !important;
+}
+
+#signup button {
+  background: linear-gradient(135deg, #e8c77d, #b88a36) !important;
+  color: #172e26 !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: bold !important;
+}
+
+#signup button:hover {
+  background: #f5dda0 !important;
+}
+/* SECRET VIBE — PUBLIC PAGE AND DASHBOARD */
+
+#public.box,
+#dash > .box,
+#inbox.box,
+#community.box,
+#profile.box {
+  background: linear-gradient(135deg, #12382f, #1c5142, #102b25) !important;
+  color: #fff8e8 !important;
+  border: 1px solid #c9a45c !important;
+  border-radius: 22px !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.15) !important;
+}
+
+#public h2,
+#dash h2,
+#dash h3 {
+  color: #f2d99b !important;
+}
+
+#public p,
+#dash p,
+#dash .muted {
+  color: #e8dfca !important;
+}
+
+#public textarea,
+#dash input,
+#dash textarea {
+  background: #fffaf0 !important;
+  color: #183b32 !important;
+  border: 1px solid #c9a45c !important;
+  border-radius: 12px !important;
+}
+
+#dash .tab {
+  background: #173d33 !important;
+  color: #f2d99b !important;
+  border: 1px solid #c9a45c !important;
+}
+
+#dash .tab.active {
+  background: #d5ad60 !important;
+  color: #173329 !important;
+}
+
+#dash .post {
+  background: #fff8e8 !important;
+  color: #263b31 !important;
+  border: 1px solid #d5ad60 !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+}
+
+#dash .post p {
+  color: #263b31 !important;
+}
+
+#public button,
+#dash button {
+  border-radius: 12px !important;
+}
+</style>
+</head>
+
+<body>
+<header class="top">
+  <div class="brand">Secret <span>Vibe</span></div>
+  <button class="btn soft" id="home">Home</button>
+</header>
+
+<main>
+
+<section id="homeView">
+  <div class="hero">
+    <div>
+      <span class="pill">YOUR SPACE. YOUR VOICE.</span>
+      <h1>Say it freely.<br>Keep it respectful.</h1>
+      <p>
+        Share your personal link and receive honest anonymous
+        messages. Share moments and connect with a positive community.
+      </p>
+      <button class="btn" id="start">Create your free account</button>
+    </div>
+    <div class="art">💌</div>
+  </div>
+
+  <div class="grid">
+    <div class="box">
+      <h2>How it works</h2>
+      <p>① Choose a username.</p>
+      <p>② Share your personal link.</p>
+      <p>③ Friends send anonymous messages.</p>
+      <p>④ Read them in your private inbox.</p>
+    </div>
+
+    <div class="box">
+      <h2>A respectful space</h2>
+      <p class="muted">
+        Share positive thoughts, photos and messages.
+        Protect your privacy and never post sensitive personal information.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="signup" class="box hidden">
+  <h2>Create your account</h2>
+  <p class="muted">Choose a unique username. No email or password required.</p>
+
+  <input id="username" class="field" maxlength="20"
+  placeholder="username (3–20 letters, numbers or _)">
+
+  <button id="create" class="btn">Create account</button>
+
+  <p class="muted">
+    This demo account is tied to this browser. Clearing browser data
+    or changing devices may make recovery impossible.
+  </p>
+</section>
+
+<section id="public" class="box hidden">
+  <span class="pill" id="publicPill">ANONYMOUS MESSAGE</span>
+  <h2 id="publicTitle">Send a message</h2>
+  <div id="publicPost" class="hidden">
+    <img id="reactionPostImage" class="reaction-photo" alt="Shared community picture">
+    <p id="reactionPostCaption"></p>
+    <p class="muted">What do you think about this post?</p>
+  </div>
+
+  <textarea id="publicText" class="field" maxlength="1000"
+  placeholder="Write your anonymous message..."></textarea>
+
+  <button id="send" class="btn">Send anonymously</button>
+  <button id="visitorSignup" class="btn">Create your own Secret Vibe account </button>
+  <p id="publicStatus" class="muted"></p>
+</section>
+
+<section id="dash" class="hidden">
+
+  <div class="box">
+    <span class="pill">YOUR DASHBOARD</span>
+    <h2 id="welcome">Welcome</h2>
+    <p class="muted">Your personal link</p>
+
+    <div class="linkrow">
+      <input id="myLink" class="field" readonly>
+      <button class="btn" id="copy">Copy</button>
+      <button class="btn soft" id="share">Share</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="inbox">Inbox</button>
+    <button class="tab" data-tab="community">Community</button>
+    <button class="tab" data-tab="profile">Profile</button>
+  </div>
+
+  <div id="inbox" class="box">
+    <h2>Private inbox</h2>
+    <div id="messages" class="muted">
+      Your messages will appear here.
+    </div>
+  </div>
+  <div id="community" class="box hidden">
+    <h2>Community</h2>
+    <p class="muted">Share a thought or picture (maximum 5 MB).</p>
+    <textarea id="caption" class="field" maxlength="500"
+    placeholder="What's on your mind?"></textarea>
+    <input id="photo" class="field" type="file" accept="image/*">
+   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+  <button class="btn" id="publish">Publish post</button>
+
+  <button class="btn soft" id="publishShare">
+    📲 Publish & Share
+  </button>
+</div>
+    <div id="feed"></div>
+  </div>
+
+  <div id="profile" class="box hidden">
+    <h2>Profile & Settings</h2>
+    <p id="profileName"></p>
+    <h3>Change Username</h3>
+    <input id="newUsername" class="field" maxlength="20"
+    placeholder="Enter your new username">
+    <button class="btn" id="changeUsername">Update Username</button>
+    <hr>
+    <button class="btn soft" id="logout">Sign out on this device</button>
+  </div>
+
+</section>
+
+<div class="foot">Secret Vibe · Share honestly. Treat people kindly.</div>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const db = window.supabase.createClient(
+  'https://chgbeacisatevxxveiny.supabase.co',
+  'sb_publishable_rkDPJmK-i6qdXmtiafCoNA_prM_t_y2'
+);
+
+let me = null;
+let profile = null;
+
+const $ = x => document.getElementById(x);
+
+const say = t => {
+  $('toast').textContent = t;
+  $('toast').classList.remove('hidden');
+  setTimeout(() => $('toast').classList.add('hidden'),2500);
+};
+
+const show = id => {
+  ['homeView','signup','public','dash'].forEach(x =>
+    $(x).classList.toggle('hidden',x !== id)
+  );
+};
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g,c => ({
+  '&':'&amp;',
+  '<':'&lt;',
+  '>':'&gt;',
+  '"':'&quot;',
+  "'":'&#39;'
+}[c]));
+
+async function route() {
+  const params = new URLSearchParams(location.search);
+  const postId = params.get('post');
+  const username = params.get('u');
+
+  if (postId) {
+    show('public');
+    $('publicPost').classList.remove('hidden');
+    $('publicPill').textContent = 'VIBE MY PICTURE';
+    $('publicTitle').textContent = 'Share your thoughts anonymously';
+    $('publicText').placeholder = 'What do you think about this picture?';
+    $('send').textContent = 'Send anonymous reaction';
+    $('send').dataset.mode = 'post';
+    $('send').dataset.postId = postId;
+    $('send').dataset.username = '';
+
+    const {data,error} = await db
+      .from('posts')
+      .select('id,caption,image_url,profiles(username)')
+      .eq('id',postId)
+      .maybeSingle();
+
+    if (error || !data) {
+      $('publicTitle').textContent = 'This post could not be found.';
+      $('publicPost').classList.add('hidden');
+      $('send').disabled = true;
+      return;
+    }
+
+    $('send').disabled = false;
+    $('reactionPostCaption').textContent =
+      (data.caption || '') + (data.profiles?.username ? ' — @' + data.profiles.username : '');
+
+    if (data.image_url) {
+      $('reactionPostImage').src = data.image_url;
+      $('reactionPostImage').classList.remove('hidden');
+    } else {
+      $('reactionPostImage').classList.add('hidden');
+    }
+    return;
+  }
+
+  $('publicPost').classList.add('hidden');
+  $('send').disabled = false;
+  $('send').textContent = 'Send anonymously';
+  $('send').dataset.mode = 'message';
+  $('publicText').placeholder = 'Write your anonymous message...';
+
+  if (username) {
+    show('public');
+    $('publicPill').textContent = 'ANONYMOUS MESSAGE';
+
+    const {data} = await db.from('profiles')
+      .select('username')
+      .eq('username',username.toLowerCase())
+      .maybeSingle();
+
+    $('publicTitle').textContent = data
+      ? 'Send an anonymous message to @' + data.username
+      : 'Profile not found';
+
+    $('send').dataset.username = data?.username || '';
+  } else {
+    show('homeView');
+  }
+}
+
+async function dashboard() {
+  show('dash');
+
+  $('welcome').textContent = 'Welcome, @' + profile.username;
+  $('profileName').textContent = 'Username: @' + profile.username;
+
+  $('myLink').value =
+    location.origin + location.pathname + '?u=' + profile.username;
+
+  tab('inbox');
+  inbox();
+}
+
+async function init() {
+  const params = new URLSearchParams(location.search);
+
+  if (params.has('u') || params.has('post')) {
+    await route();
+    return;
+  }
+
+  let {data:{session}} = await db.auth.getSession();
+
+  if (session) {
+    me = session.user;
+
+    let {data} = await db.from('profiles')
+      .select('*')
+      .eq('id',me.id)
+      .maybeSingle();
+
+    if (data) {
+      profile = data;
+      dashboard();
+      return;
+    }
+  }
+
+  route();
+}
+
+document.getElementById('start').addEventListener('click', function() {
+  show('signup');
+});
+
+$('home').onclick = () => {
+  history.pushState({},'',location.pathname);
+  route();
+};
+
+$('create').onclick = async () => {
+  let username = $('username').value.trim().toLowerCase();
+
+  if (!/^[a-z0-9_]{3,20}$/.test(username))
+    return say('Use 3–20 letters, numbers or underscores.');
+
+  let {data,error} = await db.auth.signInAnonymously();
+
+  if (error) return say(error.message);
+
+  me = data.user;
+
+  let {error:e} = await db.from('profiles').insert({
+    id:me.id,
+    username
+  });
+
+  if (e) {
+    await db.auth.signOut();
+    me = null;
+    return say(e.code === '23505'
+      ? 'Username already taken.'
+      : e.message);
+  }
+
+  profile = {id:me.id,username};
+  dashboard();
+};
+
+$('send').onclick = async () => {
+  const text = $('publicText').value.trim();
+  if (text.length < 2) return say('Write at least 2 characters.');
+
+  let result;
+
+  if ($('send').dataset.mode === 'post') {
+    result = await db.rpc('send_post_reaction', {
+      target_post_id: $('send').dataset.postId,
+      message_text: text
+    });
+  } else {
+    const username = $('send').dataset.username;
+    if (!username) return say('Profile not found.');
+
+    result = await db.rpc('send_anonymous_message', {
+      target_username: username,
+      message_text: text
+    });
+  }
+
+  if (result.error) return say(result.error.message);
+
+  $('publicText').value = '';
+  $('publicStatus').textContent = 'Your anonymous reaction has been sent.';
+  say('Sent anonymously!');
+};
+
+$('copy').onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($('myLink').value);
+    say('Link copied!');
+  } catch(e) {
+    $('myLink').select();
+    say('Copy the selected link.');
+  }
+};
+
+$('share').onclick = () => {
+  let url = $('myLink').value;
+
+  if (navigator.share) {
+    navigator.share({
+      title:'Send me an anonymous message',
+      text:'Send me an honest anonymous message!',
+      url
+    });
+  } else {
+    open('https://wa.me/?text=' +
+      encodeURIComponent('Send me an anonymous message: ' + url),
+      '_blank');
+  }
+};
+
+function tab(t) {
+  document.querySelectorAll('.tab').forEach(b =>
+    b.classList.toggle('active',b.dataset.tab === t)
+  );
+
+  ['inbox','community','profile'].forEach(x =>
+    $(x).classList.toggle('hidden',x !== t)
+  );
+
+  if (t === 'community') feed();
+}
+
+document.querySelectorAll('.tab').forEach(b =>
+  b.onclick = () => tab(b.dataset.tab)
+);
+async function inbox(){
+  let {data,error}=await db
+    .from('messages')
+    .select('id,content,created_at,post_id,post:posts(id,caption,image_url)')
+    .order('created_at',{ascending:false})
+    .limit(100);
+
+  if(error){
+    $('messages').textContent='Inbox error: '+error.message;
+    return;
+  }
+
+  $('messages').innerHTML=data.length
+    ? data.map(m=>`
+      <div class="message">
+
+        ${m.post?.image_url
+          ? `<img class="post-reaction-preview"
+              src="${esc(m.post.image_url)}"
+              alt="Picture that received this reaction">`
+          : ''}
+
+        ${m.post
+          ? `<p class="pill">REACTION TO YOUR POST</p>
+             <p class="muted">${esc(m.post.caption || 'Your shared picture')}</p>`
+          : ''}
+
+        <p>${esc(m.content)}</p>
+
+        <p class="muted">
+          ${new Date(m.created_at).toLocaleString()}
+        </p>
+
+        <div class="actions">
+          <button onclick="shareMessage('${m.id}')">
+            📲 Share
+          </button>
+
+          ${m.post_id
+            ? `<button onclick="sharePostReaction('${m.id}')">
+                💜 Share with picture
+              </button>`
+            : ''}
+
+          <button onclick="deleteMessage('${m.id}')">
+            🗑️ Delete
+          </button>
+        </div>
+
+      </div>
+    `).join('')
+    : 'No messages yet.';
+}
+window.deleteMessage = async function(id){
+
+  if(!confirm('Are you sure you want to delete this message?')){
+    return;
+  }
+
+  const {error} = await db
+    .from('messages')
+    .delete()
+    .eq('id',id);
+
+  if(error){
+    return say('Could not delete message: '+error.message);
+  }
+
+  say('Message deleted successfully!');
+  inbox();
+};
+window.shareMessage = async function(id){
+
+  const {data,error}=await db
+    .from('messages')
+    .select('content')
+    .eq('id',id)
+    .single();
+
+  if(error || !data){
+    return say('Could not load this message.');
+  }
+
+  const canvas=document.createElement('canvas');
+  canvas.width=1080;
+  canvas.height=1350;
+
+  const ctx=canvas.getContext('2d');
+
+  const themes=[
+    ['#6D28D9','#EC4899'],
+    ['#0F766E','#38BDF8'],
+    ['#BE123C','#F97316'],
+    ['#1D4ED8','#9333EA'],
+    ['#B45309','#F472B6']
+  ];
+
+  const colors=themes[Math.floor(Math.random()*themes.length)];
+
+  const gradient=ctx.createLinearGradient(0,0,1080,1350);
+  gradient.addColorStop(0,colors[0]);
+  gradient.addColorStop(1,colors[1]);
+
+  ctx.fillStyle=gradient;
+  ctx.fillRect(0,0,1080,1350);
+
+  ctx.globalAlpha=0.12;
+  ctx.fillStyle='#FFFFFF';
+
+  ctx.beginPath();
+  ctx.arc(950,130,220,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(100,1200,260,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.globalAlpha=1;
+
+  ctx.fillStyle='rgba(255,255,255,0.16)';
+  ctx.beginPath();
+  ctx.roundRect(65,90,950,1170,45);
+  ctx.fill();
+
+  ctx.textAlign='center';
+  ctx.fillStyle='#FFFFFF';
+  ctx.font='bold 54px Arial';
+  ctx.fillText('SECRET VIBE',540,210);
+
+  ctx.font='32px Arial';
+  ctx.fillText('💌 ANONYMOUS MESSAGE',540,310);
+
+  const words=data.content.split(' ');
+  const lines=[];
+  let line='';
+
+  ctx.font='bold 54px Arial';
+
+  words.forEach(word=>{
+    const test=line ? line+' '+word : word;
+
+    if(ctx.measureText(test).width>790){
+      lines.push(line);
+      line=word;
+    }else{
+      line=test;
+    }
+  });
+
+  if(line)lines.push(line);
+
+  const lineHeight=75;
+  const startY=675-(lines.length*lineHeight)/2;
+
+  lines.forEach((text,index)=>{
+    ctx.fillText(text,540,startY+index*lineHeight);
+  });
+
+  ctx.font='28px Arial';
+  ctx.fillText('Someone sent you this anonymously ❤️',540,900);
+
+  ctx.font='bold 37px Arial';
+  ctx.fillText('Want your own anonymous messages?',540,1040);
+
+  ctx.font='27px Arial';
+  ctx.fillText('Create your personal link on Secret Vibe',540,1100);
+
+  const personalLink=$('myLink').value;
+
+  ctx.font='24px Arial';
+  ctx.fillText(personalLink,540,1170);
+
+  ctx.font='22px Arial';
+  ctx.fillText('Share your link. Let the messages begin!',540,1220);
+
+  const blob=await new Promise(resolve=>
+    canvas.toBlob(resolve,'image/png')
+  );
+
+  if(!blob){
+    return say('Could not create the sharing card.');
+  }
+
+  const file=new File(
+    [blob],
+    'secret-vibe-message.png',
+    {type:'image/png'}
+  );
+
+  const shareText=
+    'I received an anonymous message on Secret Vibe! 💌\n\n'+
+    'Get your own anonymous messages here:\n'+personalLink;
+
+  try{
+
+    if(
+      navigator.canShare &&
+      navigator.canShare({files:[file]})
+    ){
+
+      await navigator.share({
+        files:[file],
+        title:'Secret Vibe',
+        text:shareText
+      });
+
+    }else{
+
+      const link='https://wa.me/?text='+
+        encodeURIComponent(shareText);
+
+      const downloadUrl=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+
+      a.href=downloadUrl;
+      a.download='secret-vibe-message.png';
+      a.click();
+
+      URL.revokeObjectURL(downloadUrl);
+
+      window.open(link,'_blank');
+
+      say('Card downloaded! Attach it to your WhatsApp message.');
+
+    }
+
+  }catch(error){
+
+    if(error.name!=='AbortError'){
+      say('Sharing was unsuccessful. Please try again.');
+    }
+
+  }
+};
+
+async function makeStatusFile({imageUrl, title, body, link, filename}) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1350;
+  const ctx = canvas.getContext('2d');
+
+  const gradient = ctx.createLinearGradient(0,0,1080,1350);
+  gradient.addColorStop(0,'#172554');
+  gradient.addColorStop(1,'#7664d8');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0,0,1080,1350);
+
+  if (imageUrl) {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.src = imageUrl;
+
+    await new Promise((resolve,reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+    });
+
+    const scale = Math.max(980/image.width, 650/image.height);
+    const width = image.width * scale;
+    const height = image.height * scale;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(50,55,980,650,34);
+    ctx.clip();
+
+    ctx.drawImage(
+      image,
+      (1080-width)/2,
+      55+(650-height)/2,
+      width,
+      height
+    );
+
+    ctx.restore();
+  }
+
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.beginPath();
+  ctx.roundRect(50,745,980,540,34);
+  ctx.fill();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 54px Arial';
+  ctx.fillText('SECRET VIBE',540,imageUrl ? 825 : 220);
+
+  const top = imageUrl ? 930 : 380;
+
+  ctx.font = 'bold 43px Arial';
+  ctx.fillText(title,540,top);
+
+  ctx.font = '34px Arial';
+
+  const words = String(body || '').split(/\s+/);
+  let line = '';
+  const lines = [];
+
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+
+    if (ctx.measureText(test).width > 850 && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+
+  if (line) lines.push(line);
+
+  const visibleLines = lines.slice(0,5);
+
+  visibleLines.forEach((item,index) => {
+    ctx.fillText(item,540,top+75+(index*52));
+  });
+
+  ctx.font = 'bold 30px Arial';
+  ctx.fillText('Send an anonymous reaction',540,1160);
+
+  ctx.font = '23px Arial';
+  ctx.fillText('Open the link to see the post and respond',540,1205);
+  ctx.fillText(link,540,1250);
+
+  const blob = await new Promise(resolve =>
+    canvas.toBlob(resolve,'image/png')
+  );
+
+  if (!blob) throw new Error('Could not create the status image.');
+
+  return new File(
+    [blob],
+    filename,
+    {type:'image/png'}
+  );
+}
+
+async function shareImageAndLink(file, text) {
+
+  if (
+    navigator.canShare &&
+    navigator.canShare({files:[file]})
+  ) {
+    await navigator.share({
+      files:[file],
+      title:'Secret Vibe',
+      text
+    });
+    return;
+  }
+  // SHARE YOUR COMMUNITY PICTURE TO WHATSAPP STATUS
+window.sharePostToStatus = async function(id) {
+  try {
+    const {data:post,error} = await db
+      .from('posts')
+      .select('id,caption,image_url')
+      .eq('id',id)
+      .single();
+
+    if(error || !post) {
+      return say('Could not load your picture.');
+    }
+
+    if(!post.image_url) {
+      return say('This post does not contain a picture.');
+    }
+
+    const link = location.origin + location.pathname +
+      '?post=' + post.id;
+
+    const file = await makeStatusFile({
+      imageUrl:post.image_url,
+      title:'WHAT IS YOUR VIBE?',
+      body:post.caption || 'Tell me what you think about my picture!',
+      link,
+      filename:'secret-vibe-picture.png'
+    });
+
+    await shareImageAndLink(
+      file,
+      'What do you think about my picture? Send an anonymous reaction here: ' + link
+    );
+
+  } catch(error) {
+    console.error(error);
+    say('Picture sharing failed. Check your image and try again.');
+  }
+};
+
+
+// SHARE AN ANONYMOUS REACTION WITH ITS ORIGINAL PICTURE
+window.sharePostReaction = async function(messageId) {
+  try {
+    const {data:message,error} = await db
+      .from('messages')
+      .select('id,content,post:posts(id,caption,image_url)')
+      .eq('id',messageId)
+      .single();
+
+    if(error || !message || !message.post) {
+      return say('Could not find the original picture.');
+    }
+
+    const post = message.post;
+
+    const link = location.origin + location.pathname +
+      '?post=' + post.id;
+
+    const file = await makeStatusFile({
+      imageUrl:post.image_url,
+      title:'SOMEONE REACTED TO MY VIBE 💜',
+      body:message.content,
+      link,
+      filename:'secret-vibe-reaction.png'
+    });
+
+    await shareImageAndLink(
+      file,
+      'Someone reacted anonymously to my picture! 💜 ' + link
+    );
+
+  } catch(error) {
+    console.error(error);
+    say('Could not create your reaction card.');
+  }
+};
+
+  const objectUrl = URL.createObjectURL(file);
+
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = file.name;
+  a.click();
+
+  setTimeout(() => URL.revokeObjectURL(objectUrl),1500);
+
+  const whatsappUrl =
+    'https://wa.me/?text=' + encodeURIComponent(text);
+
+  window.open(whatsappUrl,'_blank');
+
+  say('Image downloaded. Attach it to your WhatsApp Status.');
+}
+async function publishPost(shareAfter = false) {
+  const caption = $('caption').value.trim();
+  const file = $('photo').files[0];
+
+  if (!caption && !file)
+    return say('Add a caption or picture.');
+
+  let image_url = null;
+
+  if (file) {
+    if (file.size > 5 * 1024 * 1024)
+      return say('Image must be under 5 MB.');
+
+    const path = me.id + '/' + crypto.randomUUID() + '.' +
+      (file.name.split('.').pop() || 'jpg');
+
+    const {error} = await db.storage
+      .from('community-images')
+      .upload(path,file);
+
+    if (error) return say(error.message);
+
+    image_url = db.storage
+      .from('community-images')
+      .getPublicUrl(path).data.publicUrl;
+  }
+
+  const {data,error} = await db.from('posts')
+    .insert({
+      author_id:me.id,
+      caption,
+      image_url
+    })
+    .select('id')
+    .single();
+
+  if (error) return say(error.message);
+
+  $('caption').value = '';
+  $('photo').value = '';
+
+  say('Post published!');
+  await feed();
+
+  if (shareAfter && image_url) {
+    await sharePostToStatus(data.id);
+  } else if (shareAfter) {
+    say('Post published. Add a picture to share to Status.');
+  }
+}
+
+$('publish').onclick = () => publishPost(false);
+
+$('publishShare').onclick = () => publishPost(true);
+
+ 
+
+async function feed() {
+  const {data,error} = await db.from('posts')
+   .select('id,caption,image_url,created_at,author_id,profiles!posts_author_id_fkey(username)')
+    .order('created_at',{ascending:false})
+    .limit(50);
+
+  if (error) {
+    $('feed').textContent = error.message;
+    return;
+  }
+
+  $('feed').innerHTML = data.length
+    ? data.map(p => `
+      <article class="post">
+        ${p.image_url
+          ? `<img src="${esc(p.image_url)}" alt="Community picture">`
+          : ''}
+        <div class="postbody">
+          <b>@${esc(p.profiles?.username || 'member')}</b>
+          <p>${esc(p.caption)}</p>
+          <p class="muted">${new Date(p.created_at).toLocaleString()}</p>
+
+          <div class="actions">
+            <button onclick="likePost('${p.id}')">♡ Like</button>
+            <button onclick="commentPost('${p.id}')">Comment</button>
+
+            ${p.author_id === me.id
+              ? `<button onclick="sharePostToStatus('${p.id}')">📲 Share to Status</button>
+                 <button onclick="deletePost('${p.id}')">Delete</button>`
+              : ''}
+          </div>
+
+          <div id="c${p.id}"></div>
+        </div>
+      </article>
+    `).join('')
+    : 'No posts yet. Be the first to share something positive.';
+}
+
+window.likePost = async id => {
+  const {error} = await db.from('likes').upsert({
+    post_id:id,
+    user_id:me.id
+  },{onConflict:'post_id,user_id'});
+
+  say(error?.message || 'Liked!');
+};
+
+window.commentPost = async id => {
+  const comment = prompt('Write a respectful comment:');
+
+  if (!comment?.trim()) return;
+
+  const {error} = await db.from('comments').insert({
+    post_id:id,
+    author_id:me.id,
+    content:comment.trim()
+  });
+
+  if (error) return say(error.message);
+
+  say('Comment added!');
+
+  const {data} = await db.from('comments')
+    .select('content,profiles(username)')
+    .eq('post_id',id)
+    .order('created_at');
+
+  $('c'+id).innerHTML = (data || []).map(x => `
+    <div class="comment">
+      <b>@${esc(x.profiles?.username || 'member')}</b>
+      ${esc(x.content)}
+    </div>
+  `).join('');
+};
+
+window.deletePost = async id => {
+  if (!confirm('Delete this post?')) return;
+
+  const {error} = await db.from('posts').delete().eq('id',id);
+
+  say(error?.message || 'Post deleted');
+  feed();
+};
+
+$('changeUsername').onclick = async () => {
+  const newName = $('newUsername').value.trim().toLowerCase();
+
+  if (!/^[a-z0-9_]{3,20}$/.test(newName))
+    return say('Username must contain 3–20 letters, numbers or underscores.');
+
+  if (newName === profile.username)
+    return say('This is already your username.');
+
+  const {data,error} = await db.from('profiles')
+    .update({username:newName})
+    .eq('id',me.id)
+    .select()
+    .single();
+
+  if (error) {
+    return say(error.code === '23505'
+      ? 'That username is already taken.'
+      : error.message);
+  }
+
+  profile = data;
+
+  $('profileName').textContent = 'Username: @' + newName;
+  $('welcome').textContent = 'Welcome, @' + newName;
+
+  $('myLink').value =
+    location.origin + location.pathname + '?u=' + newName;
+
+  $('newUsername').value = '';
+
+  say('Username updated successfully!');
+};
+
+$('logout').onclick = async () => {
+  await db.auth.signOut();
+
+  me = null;
+  profile = null;
+
+  history.pushState({},'',location.pathname);
+  show('homeView');
+
+  say('Signed out');
+};
+
+init();
+$('visitorSignup').onclick = () => {
+  history.pushState({}, '', location.pathname);
+  show('signup');
+};
+</script>
+</body>
+</html> 
