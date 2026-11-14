@@ -1184,30 +1184,50 @@ $('send').onclick = async () => {
     return;
   }
 
-  const username = button.dataset.username;
-
-  if (!username) {
-    say('Recipient profile not found. Please reopen the personal link.');
-    return;
-  }
-
   button.disabled = true;
   button.textContent = 'Sending...';
 
   try {
-    const {data, error} = await db.rpc(
-      'send_anonymous_message',
-      {
+    let result;
+
+    // MESSAGE ABOUT A SPECIFIC PICTURE
+    if (button.dataset.mode === 'post') {
+
+      const postId = button.dataset.postId;
+
+      if (!postId) {
+        throw new Error('The original post ID is missing.');
+      }
+
+      result = await db.rpc('send_post_reaction', {
+        target_post_id: postId,
+        message_text: message
+      });
+
+    }
+   
+    // ORDINARY ANONYMOUS PROFILE MESSAGE
+    else {
+
+      const username = button.dataset.username;
+
+      if (!username) {
+        throw new Error('Recipient profile not found.');
+      }
+
+      result = await db.rpc('send_anonymous_message', {
         target_username: username,
         message_text: message
-      }
-    );
+      });
+    }
 
-    if (error) throw error;
+    if (result.error) throw result.error;
 
     $('publicText').value = '';
-    $('publicStatus').textContent = 'Message sent successfully!';
-    say('Anonymous message sent!');
+    $('publicStatus').textContent =
+      'Your anonymous message was sent successfully!';
+
+    say('Anonymous message sent successfully!');
 
   } catch (error) {
     console.error(error);
@@ -1215,9 +1235,16 @@ $('send').onclick = async () => {
 
   } finally {
     button.disabled = false;
-    button.textContent = 'Send anonymously';
+
+    button.textContent =
+      button.dataset.mode === 'post'
+        ? 'Send anonymous reaction'
+        : 'Send anonymously';
   }
 };
+  
+
+   
 $('copy').onclick = async () => {
   try {
     await navigator.clipboard.writeText($('myLink').value);
