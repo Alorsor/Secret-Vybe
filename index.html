@@ -1458,14 +1458,18 @@ window.shareMessage = async function(id){
   }
 };
 
-async function makeStatusFile({imageUrl, title, body, link, filename}) {
+
+
+
+async function makeStatusFile({
+  imageUrl, title, body, link, filename
+}) {
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
   canvas.height = 1350;
 
   const ctx = canvas.getContext('2d');
 
-  // Emerald background
   const bg = ctx.createLinearGradient(0, 0, 1080, 1350);
   bg.addColorStop(0, '#073d32');
   bg.addColorStop(1, '#001f1a');
@@ -1473,12 +1477,10 @@ async function makeStatusFile({imageUrl, title, body, link, filename}) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, 1080, 1350);
 
-  // Gold border
   ctx.strokeStyle = '#e5bd58';
   ctx.lineWidth = 12;
   ctx.strokeRect(25, 25, 1030, 1300);
 
-  // Picture frame
   if (imageUrl) {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -1489,9 +1491,10 @@ async function makeStatusFile({imageUrl, title, body, link, filename}) {
       img.onerror = reject;
     });
 
-    const maxW = 940;
-    const maxH = 700;
-    const scale = Math.min(maxW / img.width, maxH / img.height);
+    const scale = Math.min(
+      940 / img.width,
+      700 / img.height
+    );
 
     const w = img.width * scale;
     const h = img.height * scale;
@@ -1502,30 +1505,24 @@ async function makeStatusFile({imageUrl, title, body, link, filename}) {
     ctx.fillStyle = '#fff8e8';
     ctx.fillRect(67, 67, 946, 706);
 
-    ctx.drawImage(
-      img,
-      540 - w / 2,
-      420 - h / 2,
-      w,
-      h
-    );
+    ctx.drawImage(img, 540 - w / 2, 420 - h / 2, w, h);
   }
 
-  // Brand
   ctx.textAlign = 'center';
+
   ctx.fillStyle = '#f3cf70';
   ctx.font = 'bold 66px Georgia';
   ctx.fillText('SECRET VIBE', 540, 870);
 
   ctx.fillStyle = '#fff8e8';
   ctx.font = 'bold 39px Arial';
-  ctx.fillText(title || 'SHARE YOUR VIBE', 540, 940);
+  ctx.fillText(title, 540, 940);
 
-  // Caption
   ctx.font = '30px Arial';
+
   const words = String(body || '').split(/\s+/);
-  let line = '';
   const lines = [];
+  let line = '';
 
   for (const word of words) {
     const test = line ? line + ' ' + word : word;
@@ -1544,17 +1541,16 @@ async function makeStatusFile({imageUrl, title, body, link, filename}) {
     ctx.fillText(item, 540, 1000 + i * 43);
   });
 
-  // Call to action
   ctx.fillStyle = '#e5bd58';
-  ctx.beginPath();
-  ctx.roundRect(130, 1140, 820, 85, 25);
-  ctx.fill();
+  ctx.fillRect(130, 1140, 820, 85);
 
   ctx.fillStyle = '#073d32';
   ctx.font = 'bold 34px Arial';
-  ctx.fillText('CREATE YOUR OWN SECRET VIBE ACCOUNT', 540, 1195);
+  ctx.fillText(
+    'CREATE YOUR OWN SECRET VIBE ACCOUNT',
+    540, 1195
+  );
 
-  // Website link printed on card
   ctx.fillStyle = '#ffffff';
   ctx.font = '26px Arial';
   ctx.fillText(link, 540, 1280);
@@ -1563,12 +1559,14 @@ async function makeStatusFile({imageUrl, title, body, link, filename}) {
     canvas.toBlob(resolve, 'image/png')
   );
 
-  if (!blob) throw new Error('Could not create status card.');
+  if (!blob) throw new Error('Could not create sharing card.');
 
   return new File([blob], filename, {
     type: 'image/png'
   });
 }
+
+
 async function shareImageAndLink(file, text) {
   if (
     navigator.canShare &&
@@ -1582,25 +1580,25 @@ async function shareImageAndLink(file, text) {
     return;
   }
 
-  const objectUrl = URL.createObjectURL(file);
-
+  const url = URL.createObjectURL(file);
   const a = document.createElement('a');
-  a.href = objectUrl;
+
+  a.href = url;
   a.download = file.name;
   a.click();
 
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 
-  const whatsappUrl =
-    'https://wa.me/?text=' + encodeURIComponent(text);
-
-  window.open(whatsappUrl, '_blank');
-
-  say('Image downloaded. Attach it to your WhatsApp Status.');
+  try {
+    await navigator.clipboard.writeText(text);
+    say('Card downloaded. Website link copied!');
+  } catch {
+    say('Card downloaded. Share the website link with it.');
+  }
 }
 
 
-// SHARE COMMUNITY PICTURE TO WHATSAPP STATUS
+// SHARE ORIGINAL PICTURE
 window.sharePostToStatus = async function(id) {
   try {
     const {data:post,error} = await db
@@ -1609,26 +1607,25 @@ window.sharePostToStatus = async function(id) {
       .eq('id',id)
       .single();
 
-    if (error || !post)
-      return say('Could not load your picture.');
+    if (error || !post || !post.image_url)
+      throw new Error('Could not load the published picture.');
 
-    if (!post.image_url)
-      return say('This post does not contain a picture.');
-
-    const link = location.origin + location.pathname;
+    const link =
+      location.origin + location.pathname +
+      '?post=' + encodeURIComponent(post.id);
 
     const file = await makeStatusFile({
       imageUrl:post.image_url,
       title:'WHAT IS YOUR VIBE?',
-      body:post.caption || 'Tell me what you think about my picture!',
+      body:post.caption || 'Tell me what you think!',
       link,
       filename:'secret-vibe-picture.png'
     });
 
     await shareImageAndLink(
       file,
-      'Check out my picture on Secret Vibe! 💚\n\n' +
-      'Create your own account here:\n' + link
+      'What do you think about my picture? 💚\n\n' +
+      'Send an anonymous message here:\n' + link
     );
 
   } catch(error) {
@@ -1638,24 +1635,30 @@ window.sharePostToStatus = async function(id) {
 };
 
 
-// SHARE AN ANONYMOUS REACTION WITH ITS ORIGINAL PICTURE
+// SHARE RECEIVED ANONYMOUS MESSAGE WITH ORIGINAL PICTURE
 window.sharePostReaction = async function(messageId) {
   try {
     const {data:message,error} = await db
       .from('messages')
-      .select('id,content,post:posts(id,caption,image_url)')
+      .select('id,content,post_id,post:posts(id,caption,image_url)')
       .eq('id',messageId)
       .single();
 
     if (error || !message || !message.post)
-      return say('Could not find the original picture.');
+      throw new Error('Original picture could not be found.');
 
     const post = message.post;
-    const link = location.origin + location.pathname;
+
+    if (!post.image_url)
+      throw new Error('The original picture is unavailable.');
+
+    const link =
+      location.origin + location.pathname +
+      '?post=' + encodeURIComponent(post.id);
 
     const file = await makeStatusFile({
       imageUrl:post.image_url,
-      title:'SOMEONE REACTED TO MY VIBE 💜',
+      title:'AN ANONYMOUS REACTION 💜',
       body:message.content,
       link,
       filename:'secret-vibe-reaction.png'
@@ -1663,15 +1666,18 @@ window.sharePostReaction = async function(messageId) {
 
     await shareImageAndLink(
       file,
-      'Someone reacted to my picture on Secret Vibe! 💜\n\n' +
-      'Create your own account here:\n' + link
+      'Someone reacted anonymously to my picture! 💜\n\n' +
+      'Send your own anonymous reaction here:\n' + link
     );
 
   } catch(error) {
     console.error(error);
-    say('Could not create your reaction card: ' + error.message);
+    say('Reaction sharing failed: ' + error.message);
   }
 };
+
+
+
 async function publishPost(shareAfter = false) {
   const caption = $('caption').value.trim();
   const file = $('photo').files[0];
