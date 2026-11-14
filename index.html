@@ -789,10 +789,46 @@ async function route() {
     $('send').dataset.username = '';
 
     const {data,error} = await db
-      .from('posts')
-      .select('id,caption,image_url,profiles(username)')
-      .eq('id',postId)
-      .maybeSingle();
+  .from('posts')
+  .select('id,caption,image_url,author_id')
+  .eq('id',postId)
+  .maybeSingle();
+
+console.log('Post lookup:', {postId, data, error});
+
+if (error || !data) {
+  console.error('Post loading failed:', error);
+
+  $('publicTitle').textContent = error
+    ? 'Error loading picture: ' + error.message
+    : 'This picture does not exist or is not publicly accessible.';
+
+  $('publicPost').classList.remove('hidden');
+  $('reactionPostImage').classList.add('hidden');
+  $('send').disabled = true;
+  return;
+}
+
+$('send').disabled = false;
+
+const {data:postOwner} = await db
+  .from('profiles')
+  .select('username')
+  .eq('id',data.author_id)
+  .maybeSingle();
+
+$('reactionPostCaption').textContent =
+  (data.caption || '') +
+  (postOwner?.username ? ' — @' + postOwner.username : '');
+
+if (data.image_url) {
+  $('reactionPostImage').src = data.image_url;
+  $('reactionPostImage').classList.remove('hidden');
+} else {
+  $('reactionPostImage').classList.add('hidden');
+}
+
+return;
 
     if (error || !data) {
       $('publicTitle').textContent = 'This post could not be found.';
