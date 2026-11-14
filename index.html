@@ -1986,19 +1986,6 @@ $('changeUsername').onclick = async () => {
       : error.message);
   }
 
-  // Synchronize the internal login identifier
-  const {error:authError} = await db.auth.updateUser({
-    email:accountEmail(newName)
-  });
-
-  if (authError) {
-    // Restore the previous username if login update fails
-    await db.from('profiles')
-      .update({username:oldName})
-      .eq('id',me.id);
-
-    return say('Username change failed: ' + authError.message);
-  }
 
   profile = data;
 
